@@ -2,7 +2,7 @@ var userFormEl = document.querySelector("#user-form");
 var nameInputEl = document.querySelector("#username");
 var repoContainerEl = document.querySelector("#repos-container");
 var repoSearchTerm = document.querySelector("#repo-search-term");
-
+var languageButtonsEl = document.querySelector("#language-buttons");
 
 var getUserRepos = function (user) {
     // format the github api url
@@ -18,11 +18,36 @@ var getUserRepos = function (user) {
             alert("Error: GitHub User Not Found");
         }
     })
-    .catch(function(error){
-        // Notice this `.catch()` getting chianed onto the end of the .then()` method
-        alert("Unable to connect to GitHub"); 
-    })
+        .catch(function (error) {
+            // Notice this `.catch()` getting chianed onto the end of the .then()` method
+            alert("Unable to connect to GitHub");
+        })
 };
+
+var getFeaturedRepos = function (language) {
+    var apiUrl = "http://api.github.com/search/repositories?q=" + language + "+is:featured&sort=help-wanted-issues";
+    fetch(apiUrl).then(function (response) {
+        if (response.ok) {
+            response.json().then(function (data) {
+                displayRepos(data.items, language);
+            })
+
+        } else {
+            alert('Error: GitHub User Not Found');
+        }
+    });
+}
+
+var buttonClickHandler = function (event) {
+    var language = event.target.getAttribute("data-language")
+    if (language) {
+        getFeaturedRepos(language);
+        // clear old content
+        repoContainerEl.textContent = "";
+
+    };
+}
+languageButtonsEl.addEventListener("click", buttonClickHandler);
 
 var formSubmitHandler = function (event) {
     event.preventDefault();
@@ -36,6 +61,7 @@ var formSubmitHandler = function (event) {
     }
     console.log(event);
 };
+userFormEl.addEventListener("submit", formSubmitHandler);
 
 var displayRepos = function (repos, searchTerm) {
     // check if api returned any repos
@@ -82,4 +108,4 @@ var displayRepos = function (repos, searchTerm) {
         repoContainerEl.appendChild(repoEl);
     }
 }
-userFormEl.addEventListener("submit", formSubmitHandler);
+
